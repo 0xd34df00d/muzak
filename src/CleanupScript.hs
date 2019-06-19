@@ -26,16 +26,21 @@ cleanupScript dir = do
   case entries of
     []    -> removeDir dir $> True
     items -> do
-      childrenRemoved <- forM items $ \DirEntry { .. } -> do
-        let fullPath = dir <> [name]
-        case typ of
-          Dir -> cleanupScript fullPath
-          File -> if shouldRemove name
-                     then removeFile fullPath $> True
-                     else pure False
-      let removeThisDir = and childrenRemoved
-      when removeThisDir $ removeDir dir
-      pure removeThisDir
+      let graphicsCount = length $ filter (\item -> anyExt (name item) graphics) items
+      let hasKeptFiles = any (\DirEntry { .. } -> typ == File && not (shouldRemove name)) items
+      if graphicsCount > 2 || hasKeptFiles
+         then pure False
+         else do
+          childrenRemoved <- forM items $ \DirEntry { .. } -> do
+            let fullPath = dir <> [name]
+            case typ of
+              Dir -> cleanupScript fullPath
+              File -> if shouldRemove name
+                         then removeFile fullPath $> True
+                         else pure False
+          let removeThisDir = and childrenRemoved
+          when removeThisDir $ removeDir dir
+          pure removeThisDir
   where
     shouldRemove name = anyExt name miscFiles
     anyExt name = any (`isSuffixOf` map toLower name)
