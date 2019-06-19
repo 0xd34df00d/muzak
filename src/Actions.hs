@@ -10,6 +10,6 @@ data DirEntry = DirEntry
   } deriving (Eq, Ord, Show)
 
 data Action res where
-  ListDirectory :: FilePath -> Action [DirEntry]
-  RemoveFile    :: FilePath -> Action ()
-  RemoveDir     :: FilePath -> Action ()
+  ListDirectory :: [String] -> Action [DirEntry]
+  RemoveFile    :: [String] -> Action ()
+  RemoveDir     :: [String] -> Action ()
